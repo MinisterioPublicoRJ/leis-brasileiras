@@ -90,3 +90,14 @@ class LeisOrdinariasPlanalto(Planalto):
         self.file_destination = file_destination
         self.tipo_lei = 'leis ordinárias'
         self.urls = urls_leis_ordinarias_planalto
+
+
+class LeisComplementaresPlanalto(Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'leis complementares'
+        self.urls = {
+            'todos-os-anos': 'leis-complementares-1/'
+                             'todas-as-leis-complementares-1'
+        }
