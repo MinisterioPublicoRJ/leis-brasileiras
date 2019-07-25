@@ -1,0 +1,3 @@
+*.py[co]
+geckdriver
+__pycache__
