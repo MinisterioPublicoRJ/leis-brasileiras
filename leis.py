@@ -115,7 +115,7 @@ class Alerj:
     def visit_url(self, start):
         url = self.base_url.format(tipo=self.tipo, start=start)
         common_page = req.get(url)
-        soup = BeautifulSoup(common_page.content)
+        soup = BeautifulSoup(common_page.content, features='lxml')
         return soup.find_all('tr')
 
     def parse_metadata(self, row):
