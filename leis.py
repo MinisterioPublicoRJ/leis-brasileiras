@@ -43,7 +43,7 @@ class Planalto:
         return info
 
     def dowload(self, year, url):
-        download_desc = 'Baixando {tipo} {ano}'.format(
+        download_desc = 'Baixando {tipo} Planalto ({ano})'.format(
             tipo=self.tipo_lei,
             ano=year
         )
