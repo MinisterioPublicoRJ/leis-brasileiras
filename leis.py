@@ -120,7 +120,7 @@ class Alerj:
 
     def parse_metadata(self, row):
         columns = row.find_all('td')
-        return dict(zip(self.header, [c.text for c in columns]))
+        return dict(zip(self.header, [c.text for c in columns if c.text]))
 
     def parse_full_content(self, row):
         full_content_link = self.dns + row.find('a')['href']
@@ -147,6 +147,8 @@ class Alerj:
             while len(rows):
                 # Skip header
                 for row in tqdm(rows[1:], desc=download_desc):
+                    if not row.find_all('td'):
+                        continue
                     metadata = self.parse_metadata(row)
                     metadata['inteiro_teor'] = self.parse_full_content(row)
                     writer.writerow(metadata)
