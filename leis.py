@@ -162,3 +162,17 @@ class DecretosAlerj(Alerj):
     orgao = 'Alerj'
     tipo = 'DecretoInt'
     tipo_lei = 'decretos'
+
+
+class LeisOrdinariasAlerj(Alerj):
+    orgao = 'Alerj'
+    tipo = 'LeiOrdInt'
+    tipo_lei = 'leis ordinárias'
+
+
+class LeisComplementaresAlerj(Alerj):
+    orgao = 'Alerj'
+    tipo = 'LeiCompInt'
+    tipo_lei = 'leis complementares'
+
+
