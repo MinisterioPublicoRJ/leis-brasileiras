@@ -11,7 +11,7 @@ from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
 from commons import striphtml
-from urls import urls_decretos_planalto
+from urls import urls_decretos_planalto, urls_leis_ordinarias_planalto
 
 
 class Planalto:
@@ -71,6 +71,10 @@ class Planalto:
                 row_info = self.get_row_info(tds, year)
                 writer.writerow(row_info)
 
+    def start(self):
+        for year, url in self.urls.items():
+            self.dowload(year, url)
+
 
 class DecretosPlanalto(Planalto):
     def __init__(self, file_destination):
@@ -79,6 +83,10 @@ class DecretosPlanalto(Planalto):
         self.tipo_lei = 'decretos'
         self.urls = urls_decretos_planalto
 
-    def start(self):
-        for year, url in self.urls.items():
-            self.dowload(year, url)
+
+class LeisOrdinariasPlanalto(Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'leis ordinárias'
+        self.urls = urls_leis_ordinarias_planalto
