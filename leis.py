@@ -42,7 +42,7 @@ class Planalto:
         info['inteiro_teor'] = inteiro_teor
         return info
 
-    def dowload(self, year, url):
+    def extract_info(self, year, url):
         download_desc = 'Baixando {tipo} Planalto ({ano})'.format(
             tipo=self.tipo_lei,
             ano=year
@@ -71,9 +71,9 @@ class Planalto:
                 row_info = self.get_row_info(tds, year)
                 writer.writerow(row_info)
 
-    def start(self):
+    def download(self):
         for year, url in self.urls.items():
-            self.dowload(year, url)
+            self.extract_info(year, url)
 
 
 class DecretosPlanalto(Planalto):
