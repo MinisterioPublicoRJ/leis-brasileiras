@@ -158,6 +158,7 @@ class Alerj:
                 rows = self.visit_url(start)
 
 
-class DecretoAlerj(Alerj):
+class DecretosAlerj(Alerj):
+    orgao = 'Alerj'
     tipo = 'DecretoInt'
     tipo_lei = 'decretos'
