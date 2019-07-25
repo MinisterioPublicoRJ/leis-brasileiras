@@ -176,3 +176,34 @@ class LeisComplementaresAlerj(Alerj):
     tipo_lei = 'leis complementares'
 
 
+class DecretosCamaraMunicipalRJ(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/contlei.nsf/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'decretos'
+    header = ['lei', 'ano', 'ementa', 'autor']
+
+
+class LeisOrdinariasCamaraMunicipalRJ(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/contlei.nsf/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiOrdInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['lei', 'ano', 'status', 'ementa', 'autor']
+
+
+class LeisComplementaresCamaraMunicipalRJ(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/contlei.nsf/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['lei', 'ano', 'status', 'ementa', 'autor']
