@@ -101,3 +101,61 @@ class LeisComplementaresPlanalto(Planalto):
             'todos-os-anos': 'leis-complementares-1/'
                              'todas-as-leis-complementares-1'
         }
+
+
+class Alerj:
+
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/contlei.nsf/{tipo}?OpenForm&Start={start}&Count=1000"
+    header = ['lei', 'ano', 'autor', 'ementa']
+
+    def __init__(self, file_destination):
+        self.file_destination = file_destination
+
+    def visit_url(self, start):
+        url = self.base_url.format(tipo=self.tipo, start=start)
+        common_page = req.get(url)
+        soup = BeautifulSoup(common_page.content)
+        return soup.find_all('tr')
+
+    def parse_metadata(self, row):
+        columns = row.find_all('td')
+        return dict(zip(self.header, [c.text for c in columns]))
+
+    def parse_full_content(self, row):
+        full_content_link = self.dns + row.find('a')['href']
+        resp = req.get(full_content_link)
+        soup = BeautifulSoup(resp.content, features='lxml')
+        body = soup.find('body')
+        return striphtml(body.text)
+
+    def download(self):
+        download_desc = 'Baixando {tipo} Alerj'.format(
+            tipo=self.tipo_lei
+        )
+        with open(self.file_destination, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(
+                csvfile,
+                fieldnames=['lei', 'ano', 'autor', 'ementa', 'inteiro_teor'],
+                delimiter=";",
+                quotechar='"'
+            )
+            writer.writeheader()
+
+            page = 1
+            rows = self.visit_url(start=page)
+            while len(rows):
+                # Skip header
+                for row in tqdm(rows[1:], desc=download_desc):
+                    metadata = self.parse_metadata(row)
+                    metadata['inteiro_teor'] = self.parse_full_content(row)
+                    writer.writerow(metadata)
+
+                start = page * 1000 + 1
+                page += 1
+                rows = self.visit_url(start)
+
+
+class DecretoAlerj(Alerj):
+    tipo = 'DecretoInt'
+    tipo_lei = 'decretos'
