@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from decouple import config
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import Firefox
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -19,7 +20,13 @@ class Planalto:
                "legislacao-1/"
 
     def __init__(self):
-        self.driver = Firefox(executable_path=config('DRIVER_PATH'))
+        options = Options()
+        options.headless = True
+        print("Iniciando navegador Firefox em modo headless")
+        self.driver = Firefox(
+            options=options,
+            executable_path=config('DRIVER_PATH')
+        )
 
     def get_content(self, link):
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X'
