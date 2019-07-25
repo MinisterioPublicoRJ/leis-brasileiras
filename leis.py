@@ -130,9 +130,6 @@ class Alerj:
         return striphtml(body.text)
 
     def download(self):
-        download_desc = 'Baixando {tipo} Alerj'.format(
-            tipo=self.tipo_lei
-        )
         with open(self.file_destination, 'w', newline='') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
@@ -145,6 +142,9 @@ class Alerj:
             page = 1
             rows = self.visit_url(start=page)
             while len(rows):
+                download_desc = 'Baixando {tipo} {orgao} - página: {page}'\
+                    .format(tipo=self.tipo_lei, orgao=self.orgao, page=page)
+
                 # Skip header
                 for row in tqdm(rows[1:], desc=download_desc):
                     if not row.find_all('td'):
