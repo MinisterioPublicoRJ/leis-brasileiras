@@ -133,7 +133,7 @@ class Alerj:
         with open(self.file_destination, 'w', newline='') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
-                fieldnames=['lei', 'ano', 'autor', 'ementa', 'inteiro_teor'],
+                fieldnames=self.header + ['inteiro_teor'],
                 delimiter=";",
                 quotechar='"'
             )
