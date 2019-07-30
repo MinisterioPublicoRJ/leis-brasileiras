@@ -1,6 +1,8 @@
 import csv
 import requests as req
 
+from requests.exceptions import MissingSchema
+
 from bs4 import BeautifulSoup
 from decouple import config
 from selenium.common.exceptions import NoSuchElementException
@@ -41,7 +43,7 @@ class Planalto:
         try:
             link = tds[0].find_element_by_tag_name('a').get_attribute('href')
             inteiro_teor = striphtml(self.get_content(link))
-        except NoSuchElementException:
+        except (NoSuchElementException, MissingSchema):
             inteiro_teor = ''
 
         info = {k: v.text for k, v in zip(('lei', 'ementa'), tds)}
