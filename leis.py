@@ -127,7 +127,12 @@ class Alerj:
 
     def parse_metadata(self, row):
         columns = row.find_all('td')
-        return dict(zip(self.header, [c.text for c in columns if c.text]))
+        return dict(
+            zip(
+                self.header,
+                [c.text for c in columns if c.text and c.text != '*']
+            )
+        )
 
     def parse_full_content(self, row):
         full_content_link = self.dns + row.find('a')['href']
