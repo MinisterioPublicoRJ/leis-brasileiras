@@ -155,7 +155,7 @@ class Alerj:
 
             page = 1
             rows = self.visit_url(start=page)
-            while len(rows):
+            while len(rows) > 1:
                 download_desc = 'Baixando {tipo} {orgao} - página: {page}'\
                     .format(tipo=self.tipo_lei, orgao=self.orgao, page=page)
 
