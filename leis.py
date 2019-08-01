@@ -112,6 +112,13 @@ class LeisComplementaresPlanalto(Planalto):
         }
 
 
+class LeisDelegadasPlanalto(Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'leis delegadas'
+
+
 class Alerj:
 
     dns = "http://alerjln1.alerj.rj.gov.br"
