@@ -14,7 +14,9 @@ from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
 from commons import striphtml
-from urls import urls_decretos_planalto, urls_leis_ordinarias_planalto
+from urls import (urls_decretos_planalto,
+                  urls_leis_ordinarias_planalto,
+                  urls_medidas_provisorias)
 
 
 class Planalto:
@@ -125,6 +127,14 @@ class LeisDelegadasPlanalto(Planalto):
         super().__init__()
         self.file_destination = file_destination
         self.tipo_lei = 'leis delegadas'
+
+
+class MedidasProvisoriasPlanalto(Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'medidas provisórias'
+        self.urls = urls_medidas_provisorias
 
 
 class Alerj:

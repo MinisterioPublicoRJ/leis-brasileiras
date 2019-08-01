@@ -81,3 +81,16 @@ urls_leis_ordinarias_planalto = {
     '1960-1980': 'leis-ordinarias/1980-a-1960-leis-ordinarias',
     'anterior-1960': 'leis-ordinarias/anteriores-a-1960-leis-ordinarias'
 }
+
+urls_medidas_provisorias = {
+    '2019-2022': 'medidas-provisorias/2019-a-2022',
+    '2015-2018': 'medidas-provisorias/medidas-provisorias-2015-a-2018',
+    '2011-2014': 'medidas-provisorias/2011-a-2014',
+    '2007-2010': 'medidas-provisorias/2007-a-2010',
+    '2003-2006': 'medidas-provisorias/2003-a-2006',
+    '2001-2002': 'medidas-provisorias/2001-e-2002',
+    '2000-2001': 'medidas-provisorias/2000-e-2001',
+    '1996-1999': 'medidas-provisorias/1996-a-1999',
+    '1992-1995': 'medidas-provisorias/1992-a-1995',
+    '1988-1991': 'medidas-provisorias/1988-a-1991'
+}
