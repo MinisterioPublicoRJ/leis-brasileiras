@@ -84,6 +84,9 @@ class Planalto:
         for year, url in self.urls.items():
             self.extract_info(year, url)
 
+        print('Fechando Navegador Firefox')
+        self.driver.close()
+
 
 class DecretosPlanalto(Planalto):
     def __init__(self, file_destination):
