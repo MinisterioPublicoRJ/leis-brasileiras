@@ -52,6 +52,13 @@ class Planalto:
         info['inteiro_teor'] = inteiro_teor
         return info
 
+    def _wait_table(self):
+        wait = WebDriverWait(self.driver, 20)
+        wait.until(EC.presence_of_element_located(
+            (By.TAG_NAME, 'table')
+            )
+        )
+
     def extract_info(self, year, url):
         download_desc = 'Baixando {tipo} Planalto ({ano})'.format(
             tipo=self.tipo_lei,
@@ -67,11 +74,8 @@ class Planalto:
             writer.writeheader()
 
             self.driver.get(self.base_url + url)
-            wait = WebDriverWait(self.driver, 20)
-            wait.until(EC.presence_of_element_located(
-                (By.TAG_NAME, 'table')
-                )
-            )
+
+            self._wait_table()
             table = self.driver.find_element_by_tag_name('table')
             rows = table.find_elements_by_tag_name('tr')
 
