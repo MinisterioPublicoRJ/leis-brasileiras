@@ -42,6 +42,7 @@ class Planalto:
     def get_row_info(self, tds, year):
         try:
             link = tds[0].find_element_by_tag_name('a').get_attribute('href')
+            link = link.replace('https', 'http')
             inteiro_teor = striphtml(self.get_content(link))
         except (NoSuchElementException, MissingSchema):
             inteiro_teor = ''
