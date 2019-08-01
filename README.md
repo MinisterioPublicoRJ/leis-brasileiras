@@ -9,6 +9,8 @@ http://www4.planalto.gov.br/legislacao/
   - Decretos
   - Leis Ordinárias
   - Leis Complementares
+  - Leis Delegadas
+  - Medidas Provisórias
 
 ## Alerj
 http://www3.alerj.rj.gov.br/lotus_notes/default.asp?id=144
