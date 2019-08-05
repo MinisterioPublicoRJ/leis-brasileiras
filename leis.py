@@ -1,4 +1,5 @@
 import csv
+import re
 import requests as req
 
 from requests.exceptions import MissingSchema
@@ -16,12 +17,14 @@ from tqdm import tqdm
 from commons import striphtml
 from urls import (urls_decretos_planalto,
                   urls_leis_ordinarias_planalto,
-                  urls_medidas_provisorias)
+                  urls_medidas_provisorias,
+                  urls_projetos_leis_casa_civil)
 
 
 class Planalto:
     base_url = "http://www4.planalto.gov.br/legislacao/portal-legis/"\
                "legislacao-1/"
+    origin = 'Planalto'
 
     def __init__(self):
         options = Options()
@@ -62,14 +65,15 @@ class Planalto:
         )
 
     def extract_info(self, year, url):
-        download_desc = 'Baixando {tipo} Planalto ({ano})'.format(
+        download_desc = 'Baixando {tipo} {origin} ({ano})'.format(
             tipo=self.tipo_lei,
+            origin=self.origin,
             ano=year
         )
         with open(self.file_destination, 'w', newline='') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
-                fieldnames={'lei', 'ementa', 'ano', 'inteiro_teor'},
+                fieldnames=self.header,
                 delimiter=";",
                 quotechar='"'
             )
@@ -101,6 +105,7 @@ class DecretosPlanalto(Planalto):
         self.file_destination = file_destination
         self.tipo_lei = 'decretos'
         self.urls = urls_decretos_planalto
+        self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
 class LeisOrdinariasPlanalto(Planalto):
@@ -109,6 +114,7 @@ class LeisOrdinariasPlanalto(Planalto):
         self.file_destination = file_destination
         self.tipo_lei = 'leis ordinárias'
         self.urls = urls_leis_ordinarias_planalto
+        self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
 class LeisComplementaresPlanalto(Planalto):
@@ -120,6 +126,7 @@ class LeisComplementaresPlanalto(Planalto):
             'todos-os-anos': 'leis-complementares-1/'
                              'todas-as-leis-complementares-1'
         }
+        self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
 class LeisDelegadasPlanalto(Planalto):
@@ -127,6 +134,7 @@ class LeisDelegadasPlanalto(Planalto):
         super().__init__()
         self.file_destination = file_destination
         self.tipo_lei = 'leis delegadas'
+        self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
 class MedidasProvisoriasPlanalto(Planalto):
@@ -135,6 +143,57 @@ class MedidasProvisoriasPlanalto(Planalto):
         self.file_destination = file_destination
         self.tipo_lei = 'medidas provisórias'
         self.urls = urls_medidas_provisorias
+        self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
+
+
+class CasaCivil:
+    base_url = 'http://www.casacivil.gov.br/Secretaria-Executiva/'\
+               'Diretoria%20de%20Assuntos%20Legislativos/projetos-de-lei/'
+    origin = 'Casa Civil'
+
+    def get_row_info(self, tds, year):
+        inteiro_teor = ''
+        motivacao = ''
+        try:
+            links = tds[0].find_elements_by_tag_name('a')
+            if len(links) >= 1:
+                link_inteiro_teor = links[0].get_attribute('href')
+                inteiro_teor = striphtml(self.get_content(link_inteiro_teor))
+            if len(links) == 2:
+                link_motivacao = links[1].get_attribute('href')
+                motivacao = striphtml(self.get_content(link_motivacao))
+
+        except (NoSuchElementException, MissingSchema):
+            pass
+
+        numero_lei = re.sub(r'\s+', '', tds[0].text)
+        numero_lei = re.search(r'(\d\.|\d+)\d+\/\d+', numero_lei)
+        info = {'lei': numero_lei}
+        info['ementa'] = tds[1].text
+        info['ano'] = year
+        info['inteiro_teor'] = inteiro_teor
+        info['motivacao'] = motivacao
+
+        if len(tds) == 3:
+            info['situacao'] = tds[2].text
+
+        return info
+
+
+class ProjetosCasaCivil(CasaCivil, Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'projetos-lei'
+        self.urls = urls_projetos_leis_casa_civil
+        self.header = [
+            'lei',
+            'ementa',
+            'ano',
+            'inteiro_teor',
+            'situacao',
+            'motivacao'
+        ]
 
 
 class Alerj:

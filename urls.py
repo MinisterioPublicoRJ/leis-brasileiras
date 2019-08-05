@@ -94,3 +94,8 @@ urls_medidas_provisorias = {
     '1992-1995': 'medidas-provisorias/1992-a-1995',
     '1988-1991': 'medidas-provisorias/1988-a-1991'
 }
+
+urls_projetos_leis_casa_civil = {
+        **{2019: 'copy_of_pl-2019'},
+        **{year: 'pl-{0}'.format(year) for year in range(2018, 1993, -1)}
+}
