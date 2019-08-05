@@ -18,7 +18,8 @@ from commons import striphtml
 from urls import (urls_decretos_planalto,
                   urls_leis_ordinarias_planalto,
                   urls_medidas_provisorias,
-                  urls_projetos_leis_casa_civil)
+                  urls_projetos_leis_casa_civil,
+                  urls_projetos_leis_complementares_casa_civil)
 
 
 class Planalto:
@@ -158,9 +159,11 @@ class CasaCivil:
             links = tds[0].find_elements_by_tag_name('a')
             if len(links) >= 1:
                 link_inteiro_teor = links[0].get_attribute('href')
+                link_inteiro_teor = link_inteiro_teor.replace('https', 'http')
                 inteiro_teor = striphtml(self.get_content(link_inteiro_teor))
             if len(links) == 2:
                 link_motivacao = links[1].get_attribute('href')
+                link_motivacao = link_motivacao.replace('https', 'http')
                 motivacao = striphtml(self.get_content(link_motivacao))
 
         except (NoSuchElementException, MissingSchema):
@@ -186,6 +189,22 @@ class ProjetosCasaCivil(CasaCivil, Planalto):
         self.file_destination = file_destination
         self.tipo_lei = 'projetos-lei'
         self.urls = urls_projetos_leis_casa_civil
+        self.header = [
+            'lei',
+            'ementa',
+            'ano',
+            'inteiro_teor',
+            'situacao',
+            'motivacao'
+        ]
+
+
+class ProjetosLeisComplementaresCasaCivil(CasaCivil, Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'projetos-lei-complementar'
+        self.urls = urls_projetos_leis_complementares_casa_civil
         self.header = [
             'lei',
             'ementa',
