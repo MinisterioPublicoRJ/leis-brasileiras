@@ -7,6 +7,7 @@ hospedadas em sites do Governo. Até o momento os seguintes documentos são baix
 http://www4.planalto.gov.br/legislacao/
 
   - Decretos
+  - Decretos Leis
   - Leis Ordinárias
   - Leis Complementares
   - Leis Delegadas

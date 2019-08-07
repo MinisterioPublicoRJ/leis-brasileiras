@@ -147,6 +147,16 @@ class MedidasProvisoriasPlanalto(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
+class DecretosLeisPlanato(Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'decretos-leis'
+        self.urls = {'1937-1946': 'decretos-leis/1937-a-1946-decretos-leis-1',
+                     '1965-1988': 'decretos-leis/1965-a-1988-decretos-leis'}
+        self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
+
+
 class CasaCivil:
     base_url = 'http://www.casacivil.gov.br/Secretaria-Executiva/'\
                'Diretoria%20de%20Assuntos%20Legislativos/projetos-de-lei/'
