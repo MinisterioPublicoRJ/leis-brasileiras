@@ -19,7 +19,8 @@ from urls import (urls_decretos_planalto,
                   urls_leis_ordinarias_planalto,
                   urls_medidas_provisorias,
                   urls_projetos_leis_casa_civil,
-                  urls_projetos_leis_complementares_casa_civil)
+                  urls_projetos_leis_complementares_casa_civil,
+                  urls_projetos_leis_congresso_casa_civil)
 
 
 class Planalto:
@@ -215,6 +216,22 @@ class ProjetosLeisComplementaresCasaCivil(CasaCivil, Planalto):
         self.file_destination = file_destination
         self.tipo_lei = 'projetos-lei-complementar'
         self.urls = urls_projetos_leis_complementares_casa_civil
+        self.header = [
+            'lei',
+            'ementa',
+            'ano',
+            'inteiro_teor',
+            'situacao',
+            'motivacao'
+        ]
+
+
+class ProjetosLeisCongressoCasaCivil(CasaCivil, Planalto):
+    def __init__(self, file_destination):
+        super().__init__()
+        self.file_destination = file_destination
+        self.tipo_lei = 'projetos-lei-congresso-nacional'
+        self.urls = urls_projetos_leis_congresso_casa_civil
         self.header = [
             'lei',
             'ementa',

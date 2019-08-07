@@ -103,3 +103,7 @@ urls_projetos_leis_complementares_casa_civil = {
     **{2019: 'plp-2019'},
     **{year: 'plp-{0}'.format(year) for year in range(2017, 1997, -1)}
 }
+urls_projetos_leis_congresso_casa_civil = {
+    **{2019: 'pln-2019', 2018: 'pln-2018-1'},
+    **{year: 'pln-{0}'.format(year) for year in range(2017, 2011, -1)}
+}
