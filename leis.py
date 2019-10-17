@@ -267,11 +267,17 @@ class Alerj:
         )
 
     def parse_full_content(self, row):
-        full_content_link = self.dns + row.find('a')['href']
+        # There may be links pointing to the form, which are not wanted
+        links = [l for l in row.find_all('a') if 'OpenDocument' in l['href']]
+        full_content_link = self.dns + links[0]['href']
         resp = req.get(full_content_link)
         soup = BeautifulSoup(resp.content, features='lxml')
         body = soup.find('body')
-        return striphtml(body.text)
+        strip_body = striphtml(body.text)
+
+        # Documents come with noise at the end, this removes that
+        end_doc_i = strip_body.find('HTML5 Canvas')
+        return strip_body[:end_doc_i]
 
     def download(self):
         with open(self.file_destination, 'w', newline='') as csvfile:
