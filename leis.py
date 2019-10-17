@@ -326,6 +326,17 @@ class LeisComplementaresAlerj(Alerj):
     tipo_lei = 'leis complementares'
 
 
+class EmendasLeiOrganicaCamaraMunicipalRJ(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/contlei.nsf/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'emendas a lei organica'
+    header = ['lei', 'ano', 'status', 'ementa', 'autor']
+
+
 class DecretosCamaraMunicipalRJ(Alerj):
     orgao = 'Camara Municipal'
     dns = 'http://mail.camara.rj.gov.br'
@@ -334,7 +345,7 @@ class DecretosCamaraMunicipalRJ(Alerj):
 
     tipo = 'DecretoInt'
     tipo_lei = 'decretos'
-    header = ['lei', 'ano', 'ementa', 'autor']
+    header = ['lei', 'ano', 'ementa', 'autor', 'status']
 
 
 class LeisOrdinariasCamaraMunicipalRJ(Alerj):
@@ -357,3 +368,137 @@ class LeisComplementaresCamaraMunicipalRJ(Alerj):
     tipo = 'LeiCompInt'
     tipo_lei = 'leis ordinárias'
     header = ['lei', 'ano', 'status', 'ementa', 'autor']
+
+
+# Projetos de Lei 2017-2020 CamaraRJ
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+#Projetos de Lei Camara 2013-2016
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+# Projetos de Lei Camara 2009-2012
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
