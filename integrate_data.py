@@ -3,8 +3,9 @@ import numpy as np
 import re
 import sys
 from sqlalchemy import create_engine
+from sqlalchemy.types import Integer
 from decouple import AutoConfig
-from utils import clean_author_name
+from utils import clean_author_name, expand_results
 
 def extract_projeto(s, law_type=None):
     clean_s = s.replace('.', '').replace("//", "/")
@@ -37,10 +38,10 @@ def extract_projeto(s, law_type=None):
         return '{}/{}'.format(nr, ano)
     return ''
 
-def get_cpf(nm, depara):
+def get_from_depara(nm, depara, column='cpf'):
     is_name = depara['nome_camara'] == clean_author_name(nm)
     if np.any(is_name):
-        return depara[is_name]['cpf'].iloc[0]
+        return depara[is_name][column].iloc[0]
 
 USAGE_STRING = """
     usage: python integrate_data.py TYPE PROJETOS_FILES LEI_FILES
@@ -54,15 +55,21 @@ USAGE_STRING = """
 """
 
 SUPPORTED_TYPES = ['lei', 'lei_comp', 'decreto', 'emenda']
-
-if len(sys.argv) < 3 or TYPE not in SUPPORTED_TYPES:
-    print(USAGE_STRING)
-    sys.exit(1)
+TYPE_TO_TABLE = {
+    'lei': 'projetos_lei_ordinaria',
+    'lei_comp': 'projetos_lei_complementar',
+    'decreto': 'projetos_decreto',
+    'emenda': 'projetos_emenda_lei_organica'
+}
 
 START_YEAR = 2009
 TYPE = sys.argv[1]
 PROJETOS_FILES = sys.argv[2].split(',')
 LEI_FILES = sys.argv[3].split(',')
+
+if len(sys.argv) < 3 or TYPE not in SUPPORTED_TYPES:
+    print(USAGE_STRING)
+    sys.exit(1)
 
 config = AutoConfig(search_path='.')
 POSTGRES_USER = config('POSTGRES_USER')
@@ -112,40 +119,43 @@ engine = create_engine(
     f'postgresql://{POSTGRES_USER}@{POSTGRES_HOST}'
     f':{POSTGRES_PORT}/{POSTGRES_DB}')
 depara = pd.read_sql(
-    'SELECT * FROM eleitoral.depara_vereadores_camara_tse',
+    'SELECT * FROM eleitoral.depara_vereadores_camara_tse_lupa',
     engine)
 
 dfm['cpfs'] = dfm['autor'].apply(
     lambda x: ",".join(list(
         filter(
             lambda x: x is not None,
-            [get_cpf(nm, depara) for nm in x.split(',')]
+            [get_from_depara(nm, depara, 'cpf') for nm in x.split(',')]
         )
     ))
 )
 
+dfm['cod_municipio'] = 330455
+dfm['nm_municipio'] = 'RIO DE JANEIRO'
+
+dfm = expand_results(dfm, target_columns=['cpfs'])
+
+vereadores = pd.read_sql(
+    'SELECT cpf, chave_vereador FROM lupa.vereadores_rj',
+    engine)
+
+dfm = dfm.merge(vereadores, how='left', left_on='cpfs', right_on='cpf')
+dfm = dfm.drop(['cpfs'], axis=1)
+column_order = [
+    'cod_municipio', 'nm_municipio',
+    'projeto', 'autor', 'data_publicacao', 'ementa', 'inteiro_teor',
+    'lei', 'ano', 'status', 'cpf', 'chave_vereador'
+]
+
+dfm = dfm[column_order]
+
 # Save integrated data to postgres
-if TYPE == 'lei':
-   dfm.to_sql(
-       'projetos_lei_ordinaria',
-       engine,
-       schema='eleitoral',
-       index=False)
-if TYPE == 'lei_comp':
-   dfm.to_sql(
-       'projetos_lei_complementar',
-       engine,
-       schema='eleitoral',
-       index=False)
-if TYPE == 'decreto':
-   dfm.to_sql(
-       'projetos_decreto',
-       engine,
-       schema='eleitoral',
-       index=False)
-if TYPE == 'emenda':
-   dfm.to_sql(
-       'projetos_emenda_lei_organica',
-       engine,
-       schema='eleitoral',
-       index=False)
+table_name = TYPE_TO_TABLE[TYPE]
+dfm.to_sql(
+    table_name,
+    engine,
+    schema='eleitoral',
+    index=False,
+    if_exists='replace',
+    dtype={"chave_vereador": Integer()})
