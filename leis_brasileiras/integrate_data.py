@@ -1,47 +1,19 @@
-import pandas as pd
-import numpy as np
 import re
 import sys
+
+import pandas as pd
+import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.types import Integer
 from decouple import AutoConfig
-from utils import clean_author_name, expand_results
 
-def extract_projeto(s, law_type=None):
-    clean_s = s.replace('.', '').replace("//", "/")
-    clean_s = re.sub('\s', '', clean_s)
-    if law_type == 'lei':
-        m = re.search(
-            '(ProjetodeLei|ProjLei)'
-            '(nº)?(\d+)\-?\w?(/|,de|de)(\d+)',
-            clean_s)
-    elif law_type == 'lei_comp':
-        m = re.search(
-            '(ProjetodeLei|ProjLei)Complementar'
-            '(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
-            clean_s)
-    elif law_type == 'decreto':
-        m = re.search(
-            '(ProjetodeDecretoLegislativo|ProjDecretoLegislativo)'
-            '(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
-            clean_s)
-    elif law_type == 'emenda':
-        m = re.search(
-            '(ProjetodeEmendaàLeiOrgânica|PropostadeEmenda)'
-            '(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
-            clean_s)
-    else:
-        m = None
-    if m:
-        nr = m.group(3).zfill(4)
-        ano = m.group(5)
-        return '{}/{}'.format(nr, ano)
-    return ''
+from leis_brasileiras.utils import (
+    clean_author_name,
+    expand_results,
+    extract_projeto,
+    get_from_depara
+)
 
-def get_from_depara(nm, depara, column='cpf'):
-    is_name = depara['nome_camara'] == clean_author_name(nm)
-    if np.any(is_name):
-        return depara[is_name][column].iloc[0]
 
 USAGE_STRING = """
     usage: python integrate_data.py TYPE PROJETOS_FILES LEI_FILES
