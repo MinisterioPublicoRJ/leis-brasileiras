@@ -3,3 +3,7 @@ geckodriver
 geckodriver.log
 __pycache__
 settings.ini
+.env
+.ipynb_checkpoints/
+output/
+
