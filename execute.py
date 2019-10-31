@@ -1,5 +1,6 @@
 import os
-from leis import (
+
+from leis_brasileiras.leis import (
     DecretosCamaraMunicipalRJ,
     ProjetosDeDecretoCamaraMunicipalRJ1720,
     ProjetosDeDecretoCamaraMunicipalRJ1316,
@@ -19,8 +20,8 @@ from leis import (
 
 )
 
-OUTPUT_FOLDER = 'output'
 
+OUTPUT_FOLDER = 'output'
 if not os.path.exists(OUTPUT_FOLDER):
     os.mkdir(OUTPUT_FOLDER)
 

@@ -14,8 +14,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
-from commons import striphtml
-from urls import (urls_decretos_planalto,
+from leis_brasileiras.commons import striphtml
+from leis_brasileiras.urls import (urls_decretos_planalto,
                   urls_leis_ordinarias_planalto,
                   urls_medidas_provisorias,
                   urls_projetos_leis_casa_civil,
