@@ -91,7 +91,7 @@ POSTGRES_DB=database_do_postgres
     ├── leis.py
     ├── urls.py
     └── utils.py
-├── tests.py
+├── tests
     ├── __init__.py
     ├── fixtures.py
     └── test_utils.py
