@@ -15,12 +15,13 @@ from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
 from leis_brasileiras.commons import striphtml
-from leis_brasileiras.urls import (urls_decretos_planalto,
-                  urls_leis_ordinarias_planalto,
-                  urls_medidas_provisorias,
-                  urls_projetos_leis_casa_civil,
-                  urls_projetos_leis_complementares_casa_civil,
-                  urls_projetos_leis_congresso_casa_civil)
+from leis_brasileiras.urls import (
+    urls_decretos_planalto,
+    urls_leis_ordinarias_planalto,
+    urls_medidas_provisorias,
+    urls_projetos_leis_casa_civil,
+    urls_projetos_leis_complementares_casa_civil,
+    urls_projetos_leis_congresso_casa_civil)
 
 
 class Planalto:
@@ -414,7 +415,8 @@ class ProjetosDeDecretoCamaraMunicipalRJ1720(Alerj):
     tipo_lei = 'projetos de decreto'
     header = ['lei', 'ementa', 'data_publicacao', 'autor']
 
-#Projetos de Lei Camara 2013-2016
+
+# Projetos de Lei Camara 2013-2016
 class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ1316(Alerj):
     orgao = 'Camara Municipal'
     dns = 'http://mail.camara.rj.gov.br'

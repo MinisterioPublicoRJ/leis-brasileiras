@@ -1,14 +1,11 @@
-import re
 import sys
 
 import pandas as pd
-import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.types import Integer
 from decouple import AutoConfig
 
 from leis_brasileiras.utils import (
-    clean_author_name,
     expand_results,
     extract_projeto,
     get_from_depara
@@ -17,7 +14,7 @@ from leis_brasileiras.utils import (
 
 USAGE_STRING = """
     usage: python integrate_data.py TYPE PROJETOS_FILES LEI_FILES
-    
+
     TYPE needs to be 'lei', 'lei_comp', 'decreto' or 'emenda'
 
     PROJETOS_FILES and LEI_FILES may be comprised of several CSVs,
@@ -45,7 +42,7 @@ LEI_FILES = sys.argv[3].split(',')
 
 if TYPE not in SUPPORTED_TYPES:
     print('{} not supported! Supported types:\n'
-    '{}'.format(TYPE, SUPPORTED_TYPES))
+          '{}'.format(TYPE, SUPPORTED_TYPES))
     sys.exit(1)
 
 config = AutoConfig(search_path='.')

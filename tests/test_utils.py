@@ -70,6 +70,3 @@ class TestUtils(TestCase):
         assert expected == output_7
         assert '' == output_8
         assert '' == output_9
-
-
-    

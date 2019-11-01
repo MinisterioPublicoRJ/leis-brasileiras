@@ -1,8 +1,5 @@
-import re
-
 import pandas as pd
 import numpy as np
-import psycopg2
 from unidecode import unidecode
 from sqlalchemy import create_engine
 from decouple import AutoConfig
@@ -17,7 +14,7 @@ def create_depara(df_camara, df_vereadores):
     depara = {}
     for row in df_camara.iterrows():
         ano = row[1]['projeto'].split('/')[1]
-        
+
         autores = row[1]['autor'].split(',')
         autores = [clean_author_name(autor) for autor in autores]
 
@@ -27,12 +24,15 @@ def create_depara(df_camara, df_vereadores):
         for autor in autores:
             if autor in depara:
                 continue
-            
+
             # Alguns nomes estão exatamente iguais nos dados do TSE
             viable_names = df_valid[df_valid['nome_urna'] == autor]
-            if not viable_names.empty and len(viable_names['cpf'].unique()) == 1:
+            if (
+                not viable_names.empty
+                and len(viable_names['cpf'].unique()) == 1
+            ):
                 depara[autor] = (
-                    viable_names['nome_urna'].iloc[0], 
+                    viable_names['nome_urna'].iloc[0],
                     viable_names['cpf'].iloc[0],
                     viable_names['nome'].iloc[0])
                 continue
@@ -41,17 +41,23 @@ def create_depara(df_camara, df_vereadores):
             viable_names = df_valid.copy()
             for part in autor.split():
                 part = part.replace('.', '')
-                viable1 = df_valid['nome_urna'].apply(lambda nm_dep: part in nm_dep)
-                viable2 = df_valid['nome'].apply(lambda nm_dep: part in nm_dep)
+                viable1 = df_valid['nome_urna'].apply(
+                    lambda nm_dep: part in nm_dep)
+                viable2 = df_valid['nome'].apply(
+                    lambda nm_dep: part in nm_dep)
                 if np.any(viable1) or np.any(viable2):
                     viable_names = viable_names[viable1 | viable2]
 
-            if not viable_names.empty and len(viable_names['cpf'].unique()) == 1:
+            if (
+                not viable_names.empty
+                and len(viable_names['cpf'].unique()) == 1
+            ):
                 depara[autor] = (
-                    viable_names['nome_urna'].iloc[0], 
+                    viable_names['nome_urna'].iloc[0],
                     viable_names['cpf'].iloc[0],
                     viable_names['nome'].iloc[0])
     return depara
+
 
 def get_names_not_in_depara(df_camara, depara):
     not_in_depara = set()
@@ -59,22 +65,38 @@ def get_names_not_in_depara(df_camara, depara):
         autores = clean_author_name(row[1]['autor'])
         autores = autores.split(',')
         autores = [autor.strip() for autor in autores]
-        
+
         for autor in autores:
             if autor not in depara:
                 not_in_depara.add(autor)
     return not_in_depara
 
+
 def correct_depara(depara):
     # Adicionar nomes faltantes
-    depara['DR. FERNANDO MORAES'] = ('FERNANDO MORAES', '78594200749', 'JOSE FERNANDO MORAES ALVES')
-    depara['PROFESSOR ROGERIO ROCAL'] = ('ROGERIO ROCAL', '04555478746', 'ROGERIO DE CASTRO LOPES')
-    depara['VAL CEASA'] = ('VAL', '02867827744', 'ROOSEVELT BARRETO BARCELOS')
-    
+    depara['DR. FERNANDO MORAES'] = (
+        'FERNANDO MORAES',
+        '78594200749',
+        'JOSE FERNANDO MORAES ALVES')
+    depara['PROFESSOR ROGERIO ROCAL'] = (
+        'ROGERIO ROCAL',
+        '04555478746',
+        'ROGERIO DE CASTRO LOPES')
+    depara['VAL CEASA'] = (
+        'VAL',
+        '02867827744',
+        'ROOSEVELT BARRETO BARCELOS')
+
     # Tirar nomes errados
-    depara['MARCIO GARCIA'] = ('MARCIO GARCIA', '07668281746', 'MARCIO BARRETO DOS SANTOS GARCIA')
-    depara['ALOISIO FREITAS'] = ('ALOISIO FREITAS', '23568380749', 'MANOEL ALOISIO FREITAS')
-    
+    depara['MARCIO GARCIA'] = (
+        'MARCIO GARCIA',
+        '07668281746',
+        'MARCIO BARRETO DOS SANTOS GARCIA')
+    depara['ALOISIO FREITAS'] = (
+        'ALOISIO FREITAS',
+        '23568380749',
+        'MANOEL ALOISIO FREITAS')
+
     del depara['COMISSAO DE CIENCIA TECNOLOGIA COMUNICACAO E INFORMATICA']
 
 
@@ -113,9 +135,9 @@ df_leis['nr_projeto'] = df_leis['inteiro_teor'].apply(
     extract_projeto, law_type='lei')
 
 dfm = projetos.merge(
-    df_leis[['lei', 'ano', 'status', 'nr_projeto']].astype(str), 
-    how='left', 
-    left_on='projeto', 
+    df_leis[['lei', 'ano', 'status', 'nr_projeto']].astype(str),
+    how='left',
+    left_on='projeto',
     right_on='nr_projeto')
 
 dfm['status'] = dfm['status'].fillna('Não se aplica')
@@ -123,13 +145,13 @@ dfm = dfm.drop(['nr_projeto'], axis=1)
 
 
 query = """
-    select ano_eleicao, nome, nome_urna, cpf, sigla_partido, 
+    select ano_eleicao, nome, nome_urna, cpf, sigla_partido,
     descricao_cargo, descricao_ue, descricao_totalizacao_turno
     from eleitoral.candidatos
     where descricao_cargo = 'VEREADOR'
     and descricao_ue = 'RIO DE JANEIRO'
     and descricao_totalizacao_turno in (
-        '2O TURNO', 'ELEITO POR MEDIA', 'ELEITO POR QP', 
+        '2O TURNO', 'ELEITO POR MEDIA', 'ELEITO POR QP',
         '2.O TURNO', 'MEDIA', 'ELEITO', 'SUPLENTE');
 """
 df_tse = pd.read_sql(query, engine)
@@ -138,7 +160,7 @@ df_tse = pd.read_sql(query, engine)
 depara = create_depara(dfm, df_tse)
 correct_depara(depara)
 df_depara = pd.DataFrame(
-    [[x[0], x[1][0], x[1][2], x[1][1]] for x in depara.items()], 
+    [[x[0], x[1][0], x[1][2], x[1][1]] for x in depara.items()],
     columns=['nome_camara', 'nome_urna_tse', 'nome_tse', 'cpf'])
 
 
@@ -156,13 +178,13 @@ tse_to_lupa = {}
 for row in df_lupa.iterrows():
     nome_vereador_lupa = row[1]['nome_vereador']
     nome_urna_lupa = row[1]['nome_vereador_urna']
-    
+
     nm_formatted = unidecode(nome_vereador_lupa).upper()
-    
+
     eq = df_depara[df_depara.nome_tse == nm_formatted]
     if not eq.empty:
         tse_to_lupa[eq.nome_tse.iloc[0]] = (nome_vereador_lupa, nome_urna_lupa)
-        
+
 tse_to_lupa['REIMONT LUIZ OTONI SANTA BARBARA'] = (
     'Reimont Luiz Otoni Santa Bárbar', 'Reimont')
 tse_to_lupa['LEONEL BRIZOLA'] = (

@@ -22,9 +22,9 @@ vereadores = pd.read_sql(
     engine)
 
 vereadores['cpf'] = vereadores.apply(
-    lambda row: 
-        depara[depara['nome_lupa'] == row['nome_vereador']].iloc[0]['cpf'] 
-        if row['nm_municipio'] == 'RIO DE JANEIRO' 
+    lambda row:
+        depara[depara['nome_lupa'] == row['nome_vereador']].iloc[0]['cpf']
+        if row['nm_municipio'] == 'RIO DE JANEIRO'
         else np.nan,
     axis=1)
 vereadores['chave_vereador'] = vereadores.index

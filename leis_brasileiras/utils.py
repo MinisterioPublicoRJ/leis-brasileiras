@@ -3,28 +3,29 @@ from unidecode import unidecode
 import pandas as pd
 import numpy as np
 
+
 def extract_projeto(s, law_type=None):
     clean_s = s.replace('.', '').replace("//", "/")
-    clean_s = re.sub('\s', '', clean_s)
+    clean_s = re.sub(r'\s', '', clean_s)
     if law_type == 'lei':
         m = re.search(
-            '(ProjetodeLei|ProjLei)'
-            '(nº)?(\d+)\-?\w?(/|,de|de)(\d+)',
+            r'(ProjetodeLei|ProjLei)'
+            r'(nº)?(\d+)\-?\w?(/|,de|de)(\d+)',
             clean_s)
     elif law_type == 'lei_comp':
         m = re.search(
-            '(ProjetodeLei|ProjLei)Complementar'
-            '(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
+            r'(ProjetodeLei|ProjLei)Complementar'
+            r'(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
             clean_s)
     elif law_type == 'decreto':
         m = re.search(
-            '(ProjetodeDecretoLegislativo|ProjDecretoLegislativo)'
-            '(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
+            r'(ProjetodeDecretoLegislativo|ProjDecretoLegislativo)'
+            r'(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
             clean_s)
     elif law_type == 'emenda':
         m = re.search(
-            '(ProjetodeEmendaàLeiOrgânica|PropostadeEmenda)'
-            '(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
+            r'(ProjetodeEmendaàLeiOrgânica|PropostadeEmenda)'
+            r'(nº)?(\d+)\-?\w?(/|,de|de|)(\d+)',
             clean_s)
     else:
         m = None
@@ -34,18 +35,21 @@ def extract_projeto(s, law_type=None):
         return '{}/{}'.format(nr, ano)
     return ''
 
+
 def get_from_depara(nm, depara, column='cpf'):
     is_name = depara['nome_camara'] == clean_author_name(nm)
     if np.any(is_name):
         return depara[is_name][column].iloc[0]
+
 
 def clean_author_name(x):
     x = unidecode(x)
     x = x.upper()
     x = re.sub(r'VEREADORA?', '', x)
     x = x.replace('.', '. ')
-    x = re.sub('\s+', ' ', x)
+    x = re.sub(r'\s+', ' ', x)
     return x.strip()
+
 
 def expand_results(df, target_columns=['nome_lupa', 'nome_urna_lupa']):
     def splitListToRows(row, row_accumulator, target_columns):
