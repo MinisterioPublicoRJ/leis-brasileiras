@@ -4,6 +4,7 @@ geckodriver.log
 __pycache__
 settings.ini
 .env
+*.ipynb
 .ipynb_checkpoints/
 output/
 
