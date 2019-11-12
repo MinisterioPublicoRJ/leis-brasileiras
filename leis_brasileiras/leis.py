@@ -327,6 +327,36 @@ class LeisComplementaresAlerj(Alerj):
     tipo_lei = 'leis complementares'
 
 
+class ProjetosDeLeiAlerj1923(Alerj):
+    orgao = 'Alerj'
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/scpro1923.nsf/{tipo}?OpenView&Start={start}&Count=1000"
+
+    tipo = 'VLeiInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarAlerj1923(Alerj):
+    orgao = 'Alerj'
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/scpro1923.nsf/{tipo}?OpenView&Start={start}&Count=1000"
+
+    tipo = 'VLeiCompInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretosAlerj1923(Alerj):
+    orgao = 'Alerj'
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/scpro1923.nsf/{tipo}?OpenView&Start={start}&Count=1000"
+
+    tipo = 'VDecretoInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
 class EmendasLeiOrganicaCamaraMunicipalRJ(Alerj):
     orgao = 'Camara Municipal'
     dns = 'http://mail.camara.rj.gov.br'
