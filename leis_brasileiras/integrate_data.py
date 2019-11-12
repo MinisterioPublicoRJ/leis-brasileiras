@@ -41,9 +41,8 @@ PROJETOS_FILES = sys.argv[2].split(',')
 LEI_FILES = sys.argv[3].split(',')
 
 if TYPE not in SUPPORTED_TYPES:
-    print('{} not supported! Supported types:\n'
-          '{}'.format(TYPE, SUPPORTED_TYPES))
-    sys.exit(1)
+    raise RuntimeError('{} not supported! Supported types are:\n'
+        '{}'.format(TYPE, SUPPORTED_TYPES))
 
 config = AutoConfig(search_path='.')
 POSTGRES_USER = config('POSTGRES_USER')
