@@ -95,11 +95,13 @@ POSTGRES_DB=database_do_postgres
     ├── __init__.py
     ├── fixtures.py
     └── test_utils.py
-├── create_depara.py
-├── execute.py
+├── scripts_auxiliares
+    ├── __init__.py
+    ├── create_depara.py
+    ├── execute.py
+    └── vereador_row_number.py
 ├── geckodriver
 ├── README.md
 ├── requirements.txt
-├── settings.ini
-└── vereador_row_number.py
+└── settings.ini
 ```
