@@ -41,12 +41,11 @@ http://www.camara.rj.gov.br/
   - Projetos de Emendas à Lei Orgânica
 
 
-As leis e projetos são salvos em um arquivo .CSV com separação das colunas por '';'' e com nome definido no momento da consulta;
+As leis e projetos são salvos em um arquivo .CSV com separação das colunas por '';'' e com nome definido no momento da consulta.
 
-Além disso, são fornecidos os seguintes scripts auxiliares:
-  - create_depara.py : Auxilia na criação de um depara entre os nomes dos vereadores da forma como aparecem nas leis, e os nomes presentes nos dados do TSE (Postgres).
-  - vereador_row_number.py : Auxilia na inserção de dados de CPF e uma chave sequencial na tabela de vereadores no Postgres.
-  - execute.py : Baixa todas as leis, decretos e emendas à lei orgânica, assim como seus projetos, da Câmara Municipal do Rio de Janeiro.
+Além disso, são fornecidos os seguintes scripts:
+  - download.py : Baixa todas as leis, decretos e emendas à lei orgânica, assim como seus projetos, da Câmara Municipal do Rio de Janeiro.
+  - integrate_data.py : Dados os arquivos de leis e projetos de lei, junta eles em uma única tabela.
 
 ### Exemplo de Uso
 ##### Baixando os Decretos do site do Planalto: 
@@ -70,15 +69,10 @@ Para baixar os documentos dos site é necessário utilizar o programa
 ### Configuração do Ambiente
 É necessário criar um arquivo **settings.ini** com a variável que irá apontar para o 
 **geckodriver** apresentado anteriormente.
-Para os scripts que acessam o banco no Postgres, também é necessário definir as variáveis relativas ao banco
 
 ```
 [settings]
 DRIVER_PATH=/caminho/completo/para/geckodriver
-POSTGRES_USER=usuario_do_postgres
-POSTGRES_HOST=host_do_postgres
-POSTGRES_PORT=porta_do_postgres
-POSTGRES_DB=database_do_postgres
 ```
 
 #### Estrutura do Projeto:
@@ -87,7 +81,6 @@ POSTGRES_DB=database_do_postgres
 ├── leis_brasileiras
     ├── __init__.py
     ├── commons.py
-    ├── integrate_data.py
     ├── leis.py
     ├── urls.py
     └── utils.py
@@ -95,12 +88,9 @@ POSTGRES_DB=database_do_postgres
     ├── __init__.py
     ├── fixtures.py
     └── test_utils.py
-├── scripts_auxiliares
-    ├── __init__.py
-    ├── create_depara.py
-    ├── execute.py
-    └── vereador_row_number.py
+├── download.py
 ├── geckodriver
+├── integrate_data.py
 ├── README.md
 ├── requirements.txt
 └── settings.ini
