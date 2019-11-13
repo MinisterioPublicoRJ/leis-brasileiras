@@ -1,26 +1,20 @@
 import sys
 
 import pandas as pd
-from sqlalchemy import create_engine
-from sqlalchemy.types import Integer
 from decouple import AutoConfig
 
-from leis_brasileiras.utils import (
-    expand_results,
-    extract_projeto,
-    get_from_depara
-)
+from leis_brasileiras.utils import extract_projeto
 
 
 USAGE_STRING = """
-    usage: python integrate_data.py TYPE PROJETOS_FILES LEI_FILES
+    usage: python integrate_data.py TYPE PROJETOS_FILES LEI_FILES OUTPUT_NAME
 
     TYPE needs to be 'lei', 'lei_comp', 'decreto' or 'emenda'
 
     PROJETOS_FILES and LEI_FILES may be comprised of several CSVs,
     separated by commas:
 
-    python integrate_data.py projetos1.csv,projetos2.csv leis.csv
+    python integrate_data.py lei projetos1.csv,projetos2.csv leis.csv output.csv
 """
 
 if len(sys.argv) < 4:
@@ -39,20 +33,11 @@ START_YEAR = 2009
 TYPE = sys.argv[1]
 PROJETOS_FILES = sys.argv[2].split(',')
 LEI_FILES = sys.argv[3].split(',')
+OUTPUT_FILE = sys.argv[4]
 
 if TYPE not in SUPPORTED_TYPES:
     raise RuntimeError('{} not supported! Supported types are:\n'
         '{}'.format(TYPE, SUPPORTED_TYPES))
-
-config = AutoConfig(search_path='.')
-POSTGRES_USER = config('POSTGRES_USER')
-POSTGRES_HOST = config('POSTGRES_HOST')
-POSTGRES_PORT = config('POSTGRES_PORT')
-POSTGRES_DB = config('POSTGRES_DB')
-
-engine = create_engine(
-    f'postgresql://{POSTGRES_USER}@{POSTGRES_HOST}'
-    f':{POSTGRES_PORT}/{POSTGRES_DB}')
 
 # Get projetos de lei
 projetos = []
@@ -93,43 +78,4 @@ dfm['cod_municipio'] = 330455
 dfm['nm_municipio'] = 'RIO DE JANEIRO'
 dfm = dfm.drop(['nr_projeto'], axis=1)
 
-# Get CPF from vereadores using depara
-depara = pd.read_sql(
-    'SELECT * FROM eleitoral.depara_vereadores_camara_tse_lupa',
-    engine)
-
-dfm['cpfs'] = dfm['autor'].apply(
-    lambda x: ",".join(list(
-        filter(
-            lambda cpf: cpf is not None,
-            [get_from_depara(nm, depara, 'cpf') for nm in x.split(',')]
-        )
-    ))
-)
-dfm = expand_results(dfm, target_columns=['cpfs'])
-
-# Get key from vereador table
-vereadores = pd.read_sql(
-    'SELECT cpf, chave_vereador FROM lupa.vereadores_rj',
-    engine)
-
-dfm = dfm.merge(vereadores, how='left', left_on='cpfs', right_on='cpf')
-dfm = dfm.drop(['cpfs'], axis=1)
-
-# Reorganize columns
-column_order = [
-    'cod_municipio', 'nm_municipio',
-    'projeto', 'autor', 'data_publicacao', 'ementa', 'inteiro_teor',
-    'lei', 'ano', 'status', 'cpf', 'chave_vereador'
-]
-dfm = dfm[column_order]
-
-# Save integrated data to postgres
-table_name = TYPE_TO_TABLE[TYPE]
-dfm.to_sql(
-    table_name,
-    engine,
-    schema='eleitoral',
-    index=False,
-    if_exists='replace',
-    dtype={"chave_vereador": Integer()})
+dfm.to_csv(OUTPUT_FILE, ';', index=False)
