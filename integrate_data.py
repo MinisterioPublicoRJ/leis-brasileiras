@@ -1,7 +1,6 @@
 import sys
 
 import pandas as pd
-from decouple import AutoConfig
 
 from leis_brasileiras.utils import extract_projeto
 
@@ -22,13 +21,6 @@ if len(sys.argv) < 4:
     sys.exit(1)
 
 SUPPORTED_TYPES = ['lei', 'lei_comp', 'decreto', 'emenda']
-TYPE_TO_TABLE = {
-    'lei': 'projetos_lei_ordinaria',
-    'lei_comp': 'projetos_lei_complementar',
-    'decreto': 'projetos_decreto',
-    'emenda': 'projetos_emenda_lei_organica'
-}
-
 START_YEAR = 2009
 TYPE = sys.argv[1]
 PROJETOS_FILES = sys.argv[2].split(',')
@@ -37,7 +29,7 @@ OUTPUT_FILE = sys.argv[4]
 
 if TYPE not in SUPPORTED_TYPES:
     raise RuntimeError('{} not supported! Supported types are:\n'
-        '{}'.format(TYPE, SUPPORTED_TYPES))
+                       '{}'.format(TYPE, SUPPORTED_TYPES))
 
 # Get projetos de lei
 projetos = []
