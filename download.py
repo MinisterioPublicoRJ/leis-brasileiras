@@ -1,3 +1,4 @@
+import contextlib
 import os
 
 from leis_brasileiras.leis import (
@@ -22,7 +23,7 @@ from leis_brasileiras.leis import (
 
 
 OUTPUT_FOLDER = 'output'
-if not os.path.exists(OUTPUT_FOLDER):
+with contextlib.suppress(FileExistsError):
     os.mkdir(OUTPUT_FOLDER)
 
 docs = [
