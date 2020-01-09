@@ -66,12 +66,26 @@ class Planalto:
             )
         )
 
-    def extract_info(self, year, url):
+    def extract_info(self, year, url, writer):
         download_desc = 'Baixando {tipo} {origin} ({ano})'.format(
             tipo=self.tipo_lei,
             origin=self.origin,
             ano=year
         )
+
+        self.driver.get(self.base_url + url)
+
+        self._wait_table()
+        table = self.driver.find_element_by_tag_name('table')
+        rows = table.find_elements_by_tag_name('tr')
+
+        # rows[1:] to skip table header
+        for row in tqdm(rows[1:], desc=download_desc):
+            tds = row.find_elements_by_tag_name('td')
+            row_info = self.get_row_info(tds, year)
+            writer.writerow(row_info)
+
+    def download(self):
         with open(self.file_destination, 'w', newline='') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
@@ -81,21 +95,8 @@ class Planalto:
             )
             writer.writeheader()
 
-            self.driver.get(self.base_url + url)
-
-            self._wait_table()
-            table = self.driver.find_element_by_tag_name('table')
-            rows = table.find_elements_by_tag_name('tr')
-
-            # rows[1:] to skip table header
-            for row in tqdm(rows[1:], desc=download_desc):
-                tds = row.find_elements_by_tag_name('td')
-                row_info = self.get_row_info(tds, year)
-                writer.writerow(row_info)
-
-    def download(self):
-        for year, url in self.urls.items():
-            self.extract_info(year, url)
+            for year, url in self.urls.items():
+                self.extract_info(year, url, writer)
 
         print('Fechando Navegador Firefox')
         self.driver.close()
@@ -148,7 +149,7 @@ class MedidasProvisoriasPlanalto(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
-class DecretosLeisPlanato(Planalto):
+class DecretosLeisPlanalto(Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
