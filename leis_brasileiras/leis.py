@@ -70,12 +70,26 @@ class Planalto(metaclass=ABCMeta):
             )
         )
 
-    def extract_info(self, year, url):
+    def extract_info(self, year, url, writer):
         download_desc = 'Baixando {tipo} {origin} ({ano})'.format(
             tipo=self.tipo_lei,
             origin=self.origin,
             ano=year
         )
+
+        self.driver.get(self.base_url + url)
+
+        self._wait_table()
+        table = self.driver.find_element_by_tag_name('table')
+        rows = table.find_elements_by_tag_name('tr')
+
+        # rows[1:] to skip table header
+        for row in tqdm(rows[1:], desc=download_desc):
+            tds = row.find_elements_by_tag_name('td')
+            row_info = self.get_row_info(tds, year)
+            writer.writerow(row_info)
+
+    def download(self):
         with open(self.file_destination, 'w', newline='') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
@@ -85,21 +99,8 @@ class Planalto(metaclass=ABCMeta):
             )
             writer.writeheader()
 
-            self.driver.get(self.base_url + url)
-
-            self._wait_table()
-            table = self.driver.find_element_by_tag_name('table')
-            rows = table.find_elements_by_tag_name('tr')
-
-            # rows[1:] to skip table header
-            for row in tqdm(rows[1:], desc=download_desc):
-                tds = row.find_elements_by_tag_name('td')
-                row_info = self.get_row_info(tds, year)
-                writer.writerow(row_info)
-
-    def download(self):
-        for year, url in self.urls.items():
-            self.extract_info(year, url)
+            for year, url in self.urls.items():
+                self.extract_info(year, url, writer)
 
         print('Fechando Navegador Firefox')
         self.driver.close()
@@ -152,7 +153,7 @@ class MedidasProvisoriasPlanalto(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
-class DecretosLeisPlanato(Planalto):
+class DecretosLeisPlanalto(Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
@@ -162,11 +163,7 @@ class DecretosLeisPlanato(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
-class CasaCivil(metaclass=ABCMeta):
-    base_url = 'http://www.casacivil.gov.br/Secretaria-Executiva/'\
-               'Diretoria%20de%20Assuntos%20Legislativos/projetos-de-lei/'
-    origin = 'Casa Civil'
-
+class PlanaltoProjetosReader(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self):
         pass
@@ -189,7 +186,9 @@ class CasaCivil(metaclass=ABCMeta):
             pass
 
         numero_lei = re.sub(r'\s+', '', tds[0].text)
-        numero_lei = re.search(r'(\d\.|\d+)\d+\/\d+', numero_lei)
+        numero_lei = re.search(r'(\d\.|\d+)?\d+\/\d+', numero_lei)
+        if numero_lei:
+            numero_lei = numero_lei[0]
         info = {'lei': numero_lei}
         info['ementa'] = tds[1].text
         info['ano'] = year
@@ -202,7 +201,7 @@ class CasaCivil(metaclass=ABCMeta):
         return info
 
 
-class ProjetosCasaCivil(CasaCivil, Planalto):
+class ProjetosPlanalto(PlanaltoProjetosReader, Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
@@ -218,7 +217,7 @@ class ProjetosCasaCivil(CasaCivil, Planalto):
         ]
 
 
-class ProjetosLeisComplementaresCasaCivil(CasaCivil, Planalto):
+class ProjetosLeisComplementaresPlanalto(PlanaltoProjetosReader, Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
@@ -234,7 +233,7 @@ class ProjetosLeisComplementaresCasaCivil(CasaCivil, Planalto):
         ]
 
 
-class ProjetosLeisCongressoCasaCivil(CasaCivil, Planalto):
+class ProjetosLeisCongressoPlanalto(PlanaltoProjetosReader, Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
