@@ -1,0 +1,4 @@
+[run]
+omit = 
+    leis_brasileiras/urls.py,
+    leis_brasileiras/integrate_data.py
