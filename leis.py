@@ -177,7 +177,9 @@ class PlanaltoProjetosReader:
             pass
 
         numero_lei = re.sub(r'\s+', '', tds[0].text)
-        numero_lei = re.search(r'(\d\.|\d+)\d+\/\d+', numero_lei)
+        numero_lei = re.search(r'(\d\.|\d+)?\d+\/\d+', numero_lei)
+        if numero_lei:
+            numero_lei = numero_lei[0]
         info = {'lei': numero_lei}
         info['ementa'] = tds[1].text
         info['ano'] = year
