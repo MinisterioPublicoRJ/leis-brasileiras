@@ -2,6 +2,8 @@ import csv
 import re
 import requests as req
 
+from abc import ABCMeta, abstractmethod
+
 from requests.exceptions import MissingSchema
 
 from bs4 import BeautifulSoup
@@ -14,20 +16,22 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
-from commons import striphtml
-from urls import (urls_decretos_planalto,
-                  urls_leis_ordinarias_planalto,
-                  urls_medidas_provisorias,
-                  urls_projetos_leis_casa_civil,
-                  urls_projetos_leis_complementares_casa_civil,
-                  urls_projetos_leis_congresso_casa_civil)
+from leis_brasileiras.commons import striphtml
+from leis_brasileiras.urls import (
+    urls_decretos_planalto,
+    urls_leis_ordinarias_planalto,
+    urls_medidas_provisorias,
+    urls_projetos_leis_casa_civil,
+    urls_projetos_leis_complementares_casa_civil,
+    urls_projetos_leis_congresso_casa_civil)
 
 
-class Planalto:
+class Planalto(metaclass=ABCMeta):
     base_url = "http://www4.planalto.gov.br/legislacao/portal-legis/"\
                "legislacao-1/"
     origin = 'Planalto'
 
+    @abstractmethod
     def __init__(self):
         options = Options()
         options.headless = True
@@ -158,10 +162,14 @@ class DecretosLeisPlanato(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
-class CasaCivil:
+class CasaCivil(metaclass=ABCMeta):
     base_url = 'http://www.casacivil.gov.br/Secretaria-Executiva/'\
                'Diretoria%20de%20Assuntos%20Legislativos/projetos-de-lei/'
     origin = 'Casa Civil'
+
+    @abstractmethod
+    def __init__(self):
+        pass
 
     def get_row_info(self, tds, year):
         inteiro_teor = ''
@@ -242,12 +250,13 @@ class ProjetosLeisCongressoCasaCivil(CasaCivil, Planalto):
         ]
 
 
-class Alerj:
+class Alerj(metaclass=ABCMeta):
 
     dns = "http://alerjln1.alerj.rj.gov.br"
     base_url = dns + "/contlei.nsf/{tipo}?OpenForm&Start={start}&Count=1000"
     header = ['lei', 'ano', 'autor', 'ementa']
 
+    @abstractmethod
     def __init__(self, file_destination):
         self.file_destination = file_destination
 
@@ -267,11 +276,17 @@ class Alerj:
         )
 
     def parse_full_content(self, row):
-        full_content_link = self.dns + row.find('a')['href']
+        # There may be links pointing to the form, which are not wanted
+        links = [l for l in row.find_all('a') if 'OpenDocument' in l['href']]
+        full_content_link = self.dns + links[0]['href']
         resp = req.get(full_content_link)
         soup = BeautifulSoup(resp.content, features='lxml')
         body = soup.find('body')
-        return striphtml(body.text)
+        strip_body = striphtml(body.text)
+
+        # Documents come with noise at the end, this removes that
+        end_doc_i = strip_body.find('HTML5 Canvas')
+        return strip_body[:end_doc_i]
 
     def download(self):
         with open(self.file_destination, 'w', newline='') as csvfile:
@@ -320,6 +335,47 @@ class LeisComplementaresAlerj(Alerj):
     tipo_lei = 'leis complementares'
 
 
+class ProjetosDeLeiAlerj1923(Alerj):
+    orgao = 'Alerj'
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/scpro1923.nsf/{tipo}?OpenView&Start={start}&Count=1000"
+
+    tipo = 'VLeiInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarAlerj1923(Alerj):
+    orgao = 'Alerj'
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/scpro1923.nsf/{tipo}?OpenView&Start={start}&Count=1000"
+
+    tipo = 'VLeiCompInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretosAlerj1923(Alerj):
+    orgao = 'Alerj'
+    dns = "http://alerjln1.alerj.rj.gov.br"
+    base_url = dns + "/scpro1923.nsf/{tipo}?OpenView&Start={start}&Count=1000"
+
+    tipo = 'VDecretoInt'
+    tipo_lei = 'leis ordinárias'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class EmendasLeiOrganicaCamaraMunicipalRJ(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/contlei.nsf/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'emendas a lei organica'
+    header = ['lei', 'ano', 'status', 'ementa', 'autor']
+
+
 class DecretosCamaraMunicipalRJ(Alerj):
     orgao = 'Camara Municipal'
     dns = 'http://mail.camara.rj.gov.br'
@@ -328,7 +384,7 @@ class DecretosCamaraMunicipalRJ(Alerj):
 
     tipo = 'DecretoInt'
     tipo_lei = 'decretos'
-    header = ['lei', 'ano', 'ementa', 'autor']
+    header = ['lei', 'ano', 'ementa', 'autor', 'status']
 
 
 class LeisOrdinariasCamaraMunicipalRJ(Alerj):
@@ -351,3 +407,138 @@ class LeisComplementaresCamaraMunicipalRJ(Alerj):
     tipo = 'LeiCompInt'
     tipo_lei = 'leis ordinárias'
     header = ['lei', 'ano', 'status', 'ementa', 'autor']
+
+
+# Projetos de Lei 2017-2020 CamaraRJ
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+# Projetos de Lei Camara 2013-2016
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ1316(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1316.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+# Projetos de Lei Camara 2009-2012
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ0912(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro0711.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['lei', 'ementa', 'data_publicacao', 'autor']
