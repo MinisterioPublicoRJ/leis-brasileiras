@@ -1,4 +1,5 @@
 urls_decretos_planalto = {
+    '2020': 'decretos1/2020-decretos',
     '2019': 'decretos1/2019-decretos',
     '2018': 'decretos1/2018-decretos/2018-decretos',
     '2017': 'decretos1/2017-decretos',
@@ -45,6 +46,7 @@ urls_decretos_planalto = {
 }
 
 urls_leis_ordinarias_planalto = {
+    '2020': 'leis-ordinarias/2020-leis-ordinarias',
     '2019': 'leis-ordinarias/2019-leis-ordinarias',
     '2018': 'leis-ordinarias/2018-leis-ordinarias',
     '2017': 'leis-ordinarias/2017-leis-ordinarias',
