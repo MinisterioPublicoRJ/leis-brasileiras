@@ -2,6 +2,8 @@ import csv
 import re
 import requests as req
 
+from abc import ABCMeta, abstractmethod
+
 from requests.exceptions import MissingSchema
 
 from bs4 import BeautifulSoup
@@ -24,11 +26,12 @@ from leis_brasileiras.urls import (
     urls_projetos_leis_congresso_casa_civil)
 
 
-class Planalto:
+class Planalto(metaclass=ABCMeta):
     base_url = "http://www4.planalto.gov.br/legislacao/portal-legis/"\
                "legislacao-1/"
     origin = 'Planalto'
 
+    @abstractmethod
     def __init__(self):
         options = Options()
         options.headless = True
@@ -159,10 +162,14 @@ class DecretosLeisPlanato(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
-class CasaCivil:
+class CasaCivil(metaclass=ABCMeta):
     base_url = 'http://www.casacivil.gov.br/Secretaria-Executiva/'\
                'Diretoria%20de%20Assuntos%20Legislativos/projetos-de-lei/'
     origin = 'Casa Civil'
+
+    @abstractmethod
+    def __init__(self):
+        pass
 
     def get_row_info(self, tds, year):
         inteiro_teor = ''
@@ -243,12 +250,13 @@ class ProjetosLeisCongressoCasaCivil(CasaCivil, Planalto):
         ]
 
 
-class Alerj:
+class Alerj(metaclass=ABCMeta):
 
     dns = "http://alerjln1.alerj.rj.gov.br"
     base_url = dns + "/contlei.nsf/{tipo}?OpenForm&Start={start}&Count=1000"
     header = ['lei', 'ano', 'autor', 'ementa']
 
+    @abstractmethod
     def __init__(self, file_destination):
         self.file_destination = file_destination
 
