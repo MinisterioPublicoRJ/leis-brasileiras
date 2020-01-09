@@ -1,6 +1,7 @@
 import sys
 
 import pandas as pd
+import tqdm
 
 from leis_brasileiras.utils import extract_projeto
 
@@ -33,7 +34,7 @@ if TYPE not in SUPPORTED_TYPES:
 
 # Get projetos de lei
 projetos = []
-for pf in PROJETOS_FILES:
+for pf in tqdm.tqdm(PROJETOS_FILES, 'Integrando arquivos com projetos de lei'):
     projetos.append(pd.read_csv(pf, ';'))
 projetos = pd.concat(projetos)
 
@@ -52,7 +53,7 @@ projetos.drop(['nr_projeto', 'ano'], axis=1, inplace=True)
 
 # Get leis
 leis = []
-for lf in LEI_FILES:
+for lf in tqdm.tqdm(LEI_FILES, 'Integrando arquivos com leis'):
     leis.append(pd.read_csv(lf, ';'))
 leis = pd.concat(leis)
 
@@ -70,4 +71,6 @@ dfm['cod_municipio'] = 330455
 dfm['nm_municipio'] = 'RIO DE JANEIRO'
 dfm = dfm.drop(['nr_projeto'], axis=1)
 
+print('Escrevendo arquivo final...', end=' ')
 dfm.to_csv(OUTPUT_FILE, ';', index=False)
+print('\033[92mPronto!')
