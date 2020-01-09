@@ -158,11 +158,7 @@ class DecretosLeisPlanato(Planalto):
         self.header = ['lei', 'ementa', 'ano', 'inteiro_teor']
 
 
-class CasaCivil:
-    base_url = 'http://www.casacivil.gov.br/Secretaria-Executiva/'\
-               'Diretoria%20de%20Assuntos%20Legislativos/projetos-de-lei/'
-    origin = 'Casa Civil'
-
+class PlanaltoProjetosReader:
     def get_row_info(self, tds, year):
         inteiro_teor = ''
         motivacao = ''
@@ -194,7 +190,7 @@ class CasaCivil:
         return info
 
 
-class ProjetosCasaCivil(CasaCivil, Planalto):
+class ProjetosPlanalto(PlanaltoProjetosReader, Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
@@ -210,7 +206,7 @@ class ProjetosCasaCivil(CasaCivil, Planalto):
         ]
 
 
-class ProjetosLeisComplementaresCasaCivil(CasaCivil, Planalto):
+class ProjetosLeisComplementaresPlanalto(PlanaltoProjetosReader, Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination
@@ -226,7 +222,7 @@ class ProjetosLeisComplementaresCasaCivil(CasaCivil, Planalto):
         ]
 
 
-class ProjetosLeisCongressoCasaCivil(CasaCivil, Planalto):
+class ProjetosLeisCongressoPlanalto(PlanaltoProjetosReader, Planalto):
     def __init__(self, file_destination):
         super().__init__()
         self.file_destination = file_destination

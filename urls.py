@@ -98,14 +98,14 @@ urls_medidas_provisorias = {
 }
 
 urls_projetos_leis_casa_civil = {
-        **{2019: 'copy_of_pl-2019'},
-        **{year: 'pl-{0}'.format(year) for year in range(2018, 1993, -1)}
+        **{2019: 'projetos-de-lei-m/copy_of_pl-2019'},
+        **{year: 'projetos-de-lei-m/pl-{0}'.format(year) for year in range(2018, 1993, -1)}
 }
 urls_projetos_leis_complementares_casa_civil = {
-    **{2019: 'plp-2019'},
-    **{year: 'plp-{0}'.format(year) for year in range(2017, 1997, -1)}
+    **{2019: 'projetos-de-lei-m/plp-2019'},
+    **{year: 'projetos-de-lei-m/plp-{0}'.format(year) for year in range(2017, 1997, -1)}
 }
 urls_projetos_leis_congresso_casa_civil = {
-    **{2019: 'pln-2019', 2018: 'pln-2018-1'},
-    **{year: 'pln-{0}'.format(year) for year in range(2017, 2011, -1)}
+    **{2019: 'projetos-de-lei-m/pln-2019', 2018: 'projetos-de-lei-m/pln-2018-1'},
+    **{year: 'projetos-de-lei-m/pln-{0}'.format(year) for year in range(2017, 2009, -1)}
 }
