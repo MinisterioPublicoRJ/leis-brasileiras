@@ -255,9 +255,9 @@ class Alerj(metaclass=ABCMeta):
     base_url = dns + "/contlei.nsf/{tipo}?OpenForm&Start={start}&Count=1000"
     header = ['lei', 'ano', 'autor', 'ementa']
 
-    @abstractmethod
-    def __init__(self, file_destination):
+    def __init__(self, file_destination, check_metadata_size=True):
         self.file_destination = file_destination
+        self.check_metadata_size = check_metadata_size
 
     def visit_url(self, start):
         url = self.base_url.format(tipo=self.tipo, start=start)
@@ -267,16 +267,17 @@ class Alerj(metaclass=ABCMeta):
 
     def parse_metadata(self, row):
         columns = row.find_all('td')
+        data = [c.text for c in columns if c.text and c.text != '*']
         return dict(
             zip(
                 self.header,
-                [c.text for c in columns if c.text and c.text != '*']
+                data
             )
         )
 
     def parse_full_content(self, row):
         # There may be links pointing to the form, which are not wanted
-        links = [l for l in row.find_all('a') if 'OpenDocument' in l['href']]
+        links = [l for l in row.find_all('a') if l.has_attr('href') and 'OpenDocument' in l['href']]
         full_content_link = self.dns + links[0]['href']
         resp = req.get(full_content_link)
         soup = BeautifulSoup(resp.content, features='lxml')
@@ -288,7 +289,7 @@ class Alerj(metaclass=ABCMeta):
         return strip_body[:end_doc_i]
 
     def download(self):
-        with open(self.file_destination, 'w', newline='') as csvfile:
+        with open(self.file_destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
                 fieldnames=self.header + ['inteiro_teor'],
@@ -308,6 +309,8 @@ class Alerj(metaclass=ABCMeta):
                     if not row.find_all('td'):
                         continue
                     metadata = self.parse_metadata(row)
+                    if self.check_metadata_size and len(metadata) != len(self.header):
+                        continue
                     metadata['inteiro_teor'] = self.parse_full_content(row)
                     writer.writerow(metadata)
 
@@ -372,7 +375,7 @@ class EmendasLeiOrganicaCamaraMunicipalRJ(Alerj):
 
     tipo = 'EmendaInt'
     tipo_lei = 'emendas a lei organica'
-    header = ['lei', 'ano', 'status', 'ementa', 'autor']
+    header = ['emenda', 'ano', 'status', 'ementa', 'autor']
 
 
 class DecretosCamaraMunicipalRJ(Alerj):
@@ -383,7 +386,7 @@ class DecretosCamaraMunicipalRJ(Alerj):
 
     tipo = 'DecretoInt'
     tipo_lei = 'decretos'
-    header = ['lei', 'ano', 'ementa', 'autor', 'status']
+    header = ['decreto', 'ano', 'ementa', 'autor']
 
 
 class LeisOrdinariasCamaraMunicipalRJ(Alerj):
@@ -404,8 +407,207 @@ class LeisComplementaresCamaraMunicipalRJ(Alerj):
         '{tipo}?OpenForm&Start={start}&Count=1000'
 
     tipo = 'LeiCompInt'
-    tipo_lei = 'leis ordinárias'
-    header = ['lei', 'ano', 'status', 'ementa', 'autor']
+    tipo_lei = 'leis complementares'
+    header = ['lei_comp', 'ano', 'status', 'ementa', 'autor']
+
+
+class ResolucoesPlenariasCamaraMunicipalRJ(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/contlei.nsf/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'ResolucaoInt'
+    tipo_lei = 'resoluções plenárias'
+    header = ['resolucao', 'ano', 'ementa', 'autor']
+
+# Projetos de Lei 2021-2024 CamaraRJ
+
+class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'EmendaInt'
+    tipo_lei = 'projetos de emenda a lei organica'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiInt'
+    tipo_lei = 'projetos de lei'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeLeiComplementarCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'LeiCompInt'
+    tipo_lei = 'projetos de lei complementar'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosDeDecretoCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'DecretoInt'
+    tipo_lei = 'projetos de decreto'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosResolucaoCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'ResolucaoInt'
+    tipo_lei = 'projetos de resolução'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class IndicacoesCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'IndInt'
+    tipo_lei = 'indicacoes'
+    header = ['indicacao', 'ementa', 'data_publicacao', 'autor']
+
+
+class MocoesCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'mocaoInt'
+    tipo_lei = 'moções'
+    header = ['mocao', 'ementa', 'data_publicacao', 'autor']
+
+
+class RequerimentoInformacaoCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'ReqInfInt'
+    tipo_lei = 'requerimento de informação'
+    header = ['requerimento', 'ementa', 'data_publicacao', 'autor']
+
+
+class RequerimentoCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+
+    tipo = 'ReqInt'
+    tipo_lei = 'requerimento'
+    header = ['requerimento', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=1'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioDenunciaCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=2'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio denuncia'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioOutrosCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=3'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio outros'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioEditalCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=4'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio edital'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioQuestaoOrdemCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=5'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio questão de ordem'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioParecerNormativoCJRCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=6'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio parecer normativo cjr'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioRecursoCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=7'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio recurso'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioRepresentacaoCamaraMunicipalRJ2124(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro2124.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=8'
+
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio representação'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
 
 
 # Projetos de Lei 2017-2020 CamaraRJ
@@ -417,7 +619,7 @@ class ProjetosDeEmendasLeiOrganicaCamaraMunicipalRJ1720(Alerj):
 
     tipo = 'EmendaInt'
     tipo_lei = 'projetos de emenda a lei organica'
-    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
 
 
 class ProjetosDeLeiCamaraMunicipalRJ1720(Alerj):
@@ -428,7 +630,7 @@ class ProjetosDeLeiCamaraMunicipalRJ1720(Alerj):
 
     tipo = 'LeiInt'
     tipo_lei = 'projetos de lei'
-    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
 
 
 class ProjetosDeLeiComplementarCamaraMunicipalRJ1720(Alerj):
@@ -439,7 +641,7 @@ class ProjetosDeLeiComplementarCamaraMunicipalRJ1720(Alerj):
 
     tipo = 'LeiCompInt'
     tipo_lei = 'projetos de lei complementar'
-    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
 
 
 class ProjetosDeDecretoCamaraMunicipalRJ1720(Alerj):
@@ -450,7 +652,150 @@ class ProjetosDeDecretoCamaraMunicipalRJ1720(Alerj):
 
     tipo = 'DecretoInt'
     tipo_lei = 'projetos de decreto'
-    header = ['lei', 'ementa', 'data_publicacao', 'autor']
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class ProjetosResolucaoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+		
+    tipo = 'ResolucaoInt'
+    tipo_lei = 'projetos de resolução'
+    header = ['projeto', 'ementa', 'data_publicacao', 'autor']
+
+
+class IndicacoesCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+		
+    tipo = 'IndInt'
+    tipo_lei = 'indicacoes'
+    header = ['indicacao', 'ementa', 'data_publicacao', 'autor']
+
+
+class MocoesCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+		
+    tipo = 'mocaoInt'
+    tipo_lei = 'moções'
+    header = ['mocao', 'ementa', 'data_publicacao', 'autor']
+
+
+class RequerimentoInformacaoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+		
+    tipo = 'ReqInfInt'
+    tipo_lei = 'requerimento de informação'
+    header = ['requerimento', 'ementa', 'data_publicacao', 'autor']
+
+
+class RequerimentoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000'
+		
+    tipo = 'ReqInt'
+    tipo_lei = 'requerimento'
+    header = ['requerimento', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=1'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioDenunciaCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=2'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio denuncia'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioOutrosCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=3'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio outros'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioEditalCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=4'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio edital'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioQuestaoOrdemCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=5'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio questão de ordem'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioParecerNormativoCJRCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=6'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio parecer normativo cjr'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioRecursoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=7'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio recurso'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
+
+
+class OficioRepresentacaoCamaraMunicipalRJ1720(Alerj):
+    orgao = 'Camara Municipal'
+    dns = 'http://mail.camara.rj.gov.br'
+    base_url = dns + '/APL/Legislativos/scpro1720.nsf/Internet/'\
+        '{tipo}?OpenForm&Start={start}&Count=1000&Expand=8'
+		
+    tipo = 'OficioInt'
+    tipo_lei = 'oficio representação'
+    header = ['oficio', 'ementa', 'data_publicacao', 'autor']
 
 
 # Projetos de Lei Camara 2013-2016
