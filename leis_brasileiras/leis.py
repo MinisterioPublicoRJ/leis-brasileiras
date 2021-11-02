@@ -288,7 +288,7 @@ class Alerj(metaclass=ABCMeta):
         end_doc_i = strip_body.find('HTML5 Canvas')
         return strip_body[:end_doc_i]
 
-    def download(self):
+    def download(self, return_data=False, write_to_file=True):
         with open(self.file_destination, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(
                 csvfile,
@@ -297,6 +297,7 @@ class Alerj(metaclass=ABCMeta):
                 quotechar='"'
             )
             writer.writeheader()
+            data = []
 
             page = 1
             rows = self.visit_url(start=page)
@@ -312,11 +313,17 @@ class Alerj(metaclass=ABCMeta):
                     if self.check_metadata_size and len(metadata) != len(self.header):
                         continue
                     metadata['inteiro_teor'] = self.parse_full_content(row)
-                    writer.writerow(metadata)
+                    if write_to_file:
+                        writer.writerow(metadata)
+                    if return_data:
+                        data.append(metadata)
+
 
                 start = page * 1000 + 1
                 page += 1
                 rows = self.visit_url(start)
+
+        return data
 
 
 class DecretosAlerj(Alerj):
